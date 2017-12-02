@@ -142,9 +142,16 @@ socket.on('room', function(room){
 
 ### TUTORIALS ###
 
+# Socket IO
+https://github.com/socketio/socket.io
+
 # A simple example of setting-up dynamic "rooms" for socket.io clients to join
 https://gist.github.com/crtr0/2896891
 
+# Some util functionalities and how to detect and close broken connections.
+https://github.com/websockets/ws#broadcast-example
 
+# Rooms and namespaces - there's a lot of customizations like send message to a specific user.
+http://stackabuse.com/node-js-websocket-examples-with-socket-io/
 
 
