@@ -1,3 +1,9 @@
 Installing:
 
+old version:
 npm install --save ws
+
+
+new version:
+npm install socket.io --save
+npm install uws --save

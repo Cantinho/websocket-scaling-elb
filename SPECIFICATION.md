@@ -154,4 +154,6 @@ https://github.com/websockets/ws#broadcast-example
 # Rooms and namespaces - there's a lot of customizations like send message to a specific user.
 http://stackabuse.com/node-js-websocket-examples-with-socket-io/
 
+# How to implement room in ws
+https://www.espruino.com/ws
 
