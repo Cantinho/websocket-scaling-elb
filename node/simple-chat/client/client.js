@@ -1,3 +1,6 @@
+const Connect = require('../libs/connect.js');
+const TextMessage = require('../libs/text-message.js');
+
 var WebSocket = require('ws');
 //var ws = new WebSocket();
 
@@ -24,22 +27,16 @@ process.stdin.setEncoding('utf8');
 //    System.out.println(matcher.group(1));
 //}
 
-var channel = args[0];
-var username = args[1];
-
-var data = 
-{
-  "channel" : channel,
-  "username" : username,
-  "message" : ""
-}
+var workspace = args[0];
+var agent = args[1];
+var id = args[2];
 
 process.stdin.on('data', function(message) {
   message = message.trim();
-  data.message = message;
+  var textMessage = new TextMessage(agent, id, workspace, message, false);
+  ws.send(JSON.stringify(textMessage), console.log.bind(null, 'Sent : ', JSON.stringify(textMessage)));
   //ws.message(JSON.stringify(data), console.log.bind(null, 'Sent : ', message));
-  ws.broadcast(JSON.stringify(data), channel, console.log.bind(null, 'Sent : ', message));
-
+  //ws.broadcast(JSON.stringify(data), channel, console.log.bind(null, 'Sent : ', message));
 });
 
 /** Join a room */
@@ -48,21 +45,23 @@ WebSocket.prototype.message = function (msg) {
 };
 
 /** Broadcast message to room */
-WebSocket.prototype.broadcast = function (msg, room, callback) {
-    room = room === undefined ? 'all' : room;
-    this.send(JSON.stringify({ room:room, msg:msg }), callback);
+WebSocket.prototype.broadcast = function (msg, workspace, callback) {
+    workspace = workspace === undefined ? 'all' : workspace;
+    this.send(JSON.stringify({ workspace:workspace, msg:msg }), callback);
 };
 
 /** Join a room */
-WebSocket.prototype.join = function (room) {
-    this.send(JSON.stringify({ join : room }));
+WebSocket.prototype.join = function (workspace) {
+    this.send(JSON.stringify({ join : workspace }));
 };
 
 ws.on('open', function() {
   // For WebSocket clients only
   console.log("Connected to server");
-  ws.join(channel);
-  console.log("Joining to room {" + channel + "}");
+  //ws.join(workspace);
+  var connect = new Connect(agent, id, workspace);
+  ws.send(JSON.stringify(connect));
+  console.log("Agent " + agent + " is joining to workspace {" + workspace + "}");
 });
 
 function IsJsonString(str) {
@@ -75,15 +74,24 @@ function IsJsonString(str) {
 }
 
 ws.on('message', function(message) {
+  console.log('Received: ' + message);
   if(IsJsonString(message)) {
     var jsonMsg = JSON.parse(message);
-    if(jsonMsg.username !== username && jsonMsg.message) {
-      console.log('Received: ' + jsonMsg.message);
+    if(jsonMsg.content.agent !== agent && jsonMsg.command) {
+      console.log('Receiving'); 
+      if (jsonMsg.command === 'connect') {
+        console.log('Connect message received from ' + jsonMsg.content.agent + ':' + jsonMsg.content.workspace);
+      }
+      if (jsonMsg.command === 'text_message') {
+        console.log('Text message received from ' + jsonMsg.content.agent + ':' + jsonMsg.content.msg);
+      }
+    } else {
+      console.log('Failing'); 
     }
   } else {
      console.log('False');
   }
-  //console.log('Received: ' + message);
+  
 });
 
 ws.on('close', function() {

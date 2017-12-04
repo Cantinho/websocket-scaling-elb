@@ -1,9 +1,8 @@
-
 // Constructor
 function MasterSlaveMessage(command, content) {
   // Private
   this.command = command;
-  this.content = [content];
+  this.content = content;
 };
 
 MasterSlaveMessage.prototype.copy = function() {  

@@ -1,10 +1,10 @@
 const MasterSlaveMessage = require('./master-slave-message.js');
-function TextMessage(agent, id, workspace, text, broadcast) {
+function TextMessage(agent, id, workspace, msg, broadcast) {
   var content = {
     'agent' : agent,
     'id' : id,
     'workspace' : workspace,
-    'msg' : text,
+    'msg' : msg,
     'broadcast' : broadcast
   }
   
