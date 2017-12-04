@@ -6,4 +6,5 @@ npm install --save ws
 
 new version:
 npm install socket.io --save
-npm install uws --save
+npm install ws-events --save
+

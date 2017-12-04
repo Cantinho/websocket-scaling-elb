@@ -1,6 +1,18 @@
+const MasterSlaveMessage = require('../libs/master-slave-message.js');
+const Connect = require('../libs/connect.js');
+const TextMessage = require('../libs/text-message.js');
+
+var generic = new MasterSlaveMessage("command", "content");
+var connect = new Connect("samirtf", "0000011111", "room");
+var textMessage = new TextMessage("samirtf", "0000011111", "room", "ola", false);
+
+console.log('msm message: ' + JSON.stringify(generic));
+console.log('connect message: ' + JSON.stringify(connect));
+console.log('text message: ' + JSON.stringify(textMessage));
+
 const WebSocket = require('ws');
 
-var WebSocketServer = require('ws').Server;
+var WebSocketServer = WebSocket.Server;
 
 var wss = new WebSocketServer({
         port: 8080
