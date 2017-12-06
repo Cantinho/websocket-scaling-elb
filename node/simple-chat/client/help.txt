@@ -1,3 +1,10 @@
 Installing:
 
+old version:
 npm install --save ws
+
+
+new version:
+npm install socket.io --save
+npm install ws-events --save
+npm install treemap-js --save
