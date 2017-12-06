@@ -1,9 +1,6 @@
 const Connect = require('../libs/connect.js');
 const TextMessage = require('../libs/text-message.js');
 
-var WebSocket = require('ws');
-//var ws = new WebSocket();
-
 var host = "ws://localhost:8080";
 var WebSocket = require("ws");
 var ws = new WebSocket(host,{
