@@ -31,6 +31,7 @@ function IsJsonString(str) {
 }
 
 wss.on('connection', function connection(ws) {
+  console.log('connection');
   ws.workspace = [];
   ws.agent = "";
   ws.send("User Joined");
@@ -45,11 +46,12 @@ wss.on('connection', function connection(ws) {
         console.log("Server got connect message: " + JSON.stringify(message.content));
       }
       if (message.command === 'text_message') {
-        console.log("Server got text message: " + JSON.stringify(message.content));
-        console.log("Server is broadcasting except to sender: " + JSON.stringify(message.content));
+        console.log("Server got text message: " + JSON.stringify(message.content));       
         if(message.content.broadcast) {
+          console.log("Server is broadcasting except to sender: " + JSON.stringify(message.content));
           broadcastExceptSender(message, ws);
         } else {
+          console.log("Server is sending to specific user: " + JSON.stringify(message.content));
           sendToSpecificUser(message, ws);
         }
       }
@@ -98,12 +100,6 @@ function broadcastExceptSender(message, sender) {
 
 function sendToSpecificUser(message, sender) {
   const agent_dst = message.content.agent_dst;
-  console.log("Connected users\n");
-  users.each(function(value, key){
-    console.log(key);
-  });
-  console.log("\n");
-
   wss.clients.forEach(function each(client) {
     if (sender == client) return;
     // Broadcast to everyone else.

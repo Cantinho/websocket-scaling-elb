@@ -3,7 +3,9 @@ const TextMessage = require('../libs/text-message.js');
 var parallel = require('run-parallel');
 
 var WebSocket = require('ws');
-var host = "ws://localhost:8080";
+//var host = "ws://localhost:8080";
+var host = "ws://ec2-52-67-152-31.sa-east-1.compute.amazonaws.com:8080";
+
 
 var args = process.argv.slice(2);
 
@@ -58,6 +60,7 @@ function createSocket(host, agent, id, workspace) {
     console.log('Received: ' + message);
     if(message === "User Joined") {
       connection_counter--;
+      console.log(connection_counter);
     }
     if(IsJsonString(message)) {
       const jsonMsg = JSON.parse(message);
@@ -103,25 +106,30 @@ function createSocket(host, agent, id, workspace) {
   return ws;
 }
 
-console.log("Begin - Creating client sockets...\n");
-/** Initializes all required websocket clients */
-var current_workspace = 0;
-for (i = 0; i < sockets.length; i++) {
-  sockets[i] = createSocket(host, "agent_"+i, "id_"+i, "workspace_"+current_workspace);
-  workspaces[i] = current_workspace;
-  if(i != 0 && i%agents_by_workspace == 0) {
-    current_workspace++;
-  }
-}
-console.log("End - Creating client sockets...\n");
 
-console.log("Begin - Creating master socket...\n");
-/** Initializes all required websocket clients */
-for (i = 0; i < masters.length; i++) {
-  masters[i] = createSocket(host, "master", "master_id", "workspace_"+i);
-  console.log("Creating master socket...\n");
+function init() {
+  console.log("Begin - Creating client sockets...\n");
+  /** Initializes all required websocket clients */
+  var current_workspace = 0;
+  for (i = 0; i < sockets.length; i++) {
+    sockets[i] = createSocket(host, "agent_"+i, "id_"+i, "workspace_"+current_workspace);
+    workspaces[i] = current_workspace;
+    if(i != 0 && i%agents_by_workspace == 0) {
+      current_workspace++;
+    }
+  }
+  console.log("End - Creating client sockets...\n");
+  
+  console.log("Begin - Creating master socket...\n");
+  /** Initializes all required websocket clients */
+  for (i = 0; i < masters.length; i++) {
+    masters[i] = createSocket(host, "master", "master_id", "workspace_"+i);
+    console.log("Creating master socket...\n");
+  }
+  console.log("End - Creating master socket...\n");
+  return true;
 }
-console.log("End - Creating master socket...\n");
+
 
 /** Sends a message to specific websocket */
 function sendMessage(ws, agent, id, workspace, agent_dst, message, broadcast) {
@@ -131,30 +139,72 @@ function sendMessage(ws, agent, id, workspace, agent_dst, message, broadcast) {
 
 
 /** Inits a connection test */
-function init() {
-  while(connection_counter > 0) {
-    // Wait for all connections to have been established.
-    console.log();
-  }
-  var i = 10;
-  while(i--) {
+function simulate() {
+//  while(connection_counter > 1) {
+//    // Wait for all connections to have been established.
+    console.log(connection_counter);
+//  }
+  var undefineds = 0;
+  for(i = 0; i < 100; i++) {
     console.log("sending text message " + i + "...\n");
     const min = 0;
-    const max = agents_by_workspace * workspace_size;
+    const max = agents_by_workspace * workspace_size - 1;
     const index = randomIntFromInterval(min, max);
-    
+    console.log(index);
     const ws = sockets[index];
     const agent_dst = "master";
     const message = "[" + randomIntFromInterval(0, 1000000) + "]";
     const broadcast = false;
-    sendMessage(ws, ws.agent, ws.id, ws.workspace, agent_dst, message, broadcast);
-    console.log("Message sent: " + ws.agent + " " + ws.id + " " + ws.workspace + " " + agent_dst + " " + message + " " + broadcast );
+    if (typeof ws != "undefined") {
+      sendMessage(ws, ws.agent, ws.id, ws.workspace, agent_dst, message, broadcast);
+      console.log("Message sent: " + ws.agent + " " + ws.id + " " + ws.workspace + " " + agent_dst + " " + message + " " + broadcast );
+    } else {
+      undefineds++;
+      console.log("undefined:" + undefineds);
+    }
+  }
+}
+
+/** Inits a connection test */
+function simulate2() {
+//  while(connection_counter > 1) {
+//    // Wait for all connections to have been established.
+    console.log(connection_counter);
+//  }
+  var undefineds = 0;
+  for(i = 0; i < 100; i++) {
+    console.log("sending text message " + i + "...\n");
+    const min = 0;
+    const max = agents_by_workspace * workspace_size - 1;
+    const index = randomIntFromInterval(min, max);
+    console.log(index);
+    const ws = sockets[index];
+    const agent_dst = "master";
+    const message = "[" + randomIntFromInterval(0, 1000000) + "]";
+    const broadcast = false;
+    if (typeof ws != "undefined") {
+      sendMessage(ws, ws.agent, ws.id, ws.workspace, agent_dst, message, broadcast);
+      console.log("Message sent: " + ws.agent + " " + ws.id + " " + ws.workspace + " " + agent_dst + " " + message + " " + broadcast );
+    } else {
+      undefineds++;
+      console.log("undefined:" + undefineds);
+    }
   }
 }
 
 console.log("Begin - init...\n");
 
-parallel([init()
+parallel([
+  function (callback) {
+    init();
+    return 'init';
+  },
+  function (callback) {
+    setTimeout(function () {
+      simulate();
+    }, 60000);  
+    return 'simulate';
+  }
 ],
 // optional callback
 function (err, results) {
